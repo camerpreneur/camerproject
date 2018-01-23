@@ -14,6 +14,9 @@ elgg_register_event_handler('init', 'system', 'camerproject_fields_setup', 10000
 
 
 function camerproject_init(){
+	
+	elgg_unregister_plugin_hook_handler('page_owner', 'system', 'default_page_owner_handler');
+	elgg_register_plugin_hook_handler('page_owner', 'system', 'camer_default_page_owner_handler');
     
    elgg_register_entity_type('group', Camerproject::SUBTYPE);
    elgg_register_entity_type('object', Needproject::SUBTYPE);   
@@ -76,6 +79,81 @@ function camerproject_init(){
     elgg_register_plugin_hook_handler('register', 'menu:owner_block', 'camerproject_pages_owner_block_menu');      
 }   
 
+function camer_default_page_owner_handler($hook, $entity_type, $returnvalue, $params) {
+	if ($returnvalue) {
+		return $returnvalue;
+	}
+
+	$ia = elgg_set_ignore_access(true);
+
+	$username = get_input("username");
+	if ($username) {
+		// @todo using a username of group:<guid> is deprecated
+		if (substr_count($username, 'group:')) {
+			preg_match('/group\:([0-9]+)/i', $username, $matches);
+			$guid = $matches[1];
+			if ($entity = get_entity($guid)) {
+				elgg_set_ignore_access($ia);
+				return $entity->getGUID();
+			}
+		}
+
+		if ($user = get_user_by_username($username)) {
+			elgg_set_ignore_access($ia);
+			return $user->getGUID();
+		}
+	}
+
+	$owner = get_input("owner_guid");
+	if ($owner) {
+		if ($user = get_entity($owner)) {
+			elgg_set_ignore_access($ia);
+			return $user->getGUID();
+		}
+	}
+
+	// ignore root and query
+	$uri = current_page_url();
+	$path = str_replace(elgg_get_site_url(), '', $uri);
+	$path = trim($path, "/");
+	if (strpos($path, "?")) {
+		$path = substr($path, 0, strpos($path, "?"));
+	}
+
+	// @todo feels hacky
+	$segments = explode('/', $path);
+	if (isset($segments[1]) && isset($segments[2])) {
+		switch ($segments[1]) {
+			case 'owner':
+			case 'friends':
+				$user = get_user_by_username($segments[2]);
+				if ($user) {
+					elgg_set_ignore_access($ia);
+					return $user->getGUID();
+				}
+				break;
+			case 'view':
+			case 'edit':
+				$entity = get_entity($segments[2]);
+				if ($entity) {
+					elgg_set_ignore_access($ia);
+					return $entity->getContainerGUID();
+				}
+				break;
+			case 'add':
+			case 'group':
+			case 'project':
+				$entity = get_entity($segments[2]);
+				if ($entity) {
+					elgg_set_ignore_access($ia);
+					return $entity->getGUID();
+				}
+				break;
+		}
+	}
+
+	elgg_set_ignore_access($ia);
+}
 
 /**
  * Add a menu item to the user ownerblock
@@ -148,7 +226,7 @@ function camerproject_pages_page_handler($page) {
 				'guid' => $page[1],
 			]);
 			break;
-		case 'group':
+		case 'project':
 			echo elgg_view_resource('pages/owner');
 			break;
 		case 'history':
