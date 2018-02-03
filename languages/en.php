@@ -9,11 +9,13 @@ return [
      * Menu  items and Titles
      */
     'camerprojects' => 'Projects',
+    'camerproject' => 'Project',
     'camerproject:owned' => "Project I own",
     'camerproject:yours' => "My project",
     'camerproject:title' => 'Project Title',
     'camerproject:logoproject' => 'Project Logo',
     'camerproject:description' => 'Project summery',
+    'camerproject:description:help' => 'summery 1500 words',
     'camerproject:progress' => 'Project Status',
     'camerproject:industry' => 'Industry Sector',
     'camerproject:activity' => 'Specific Activity',
@@ -37,7 +39,7 @@ return [
     'camerproject:projectwebsite' => 'Project Website',
     'camerproject:location' => 'City',
     
-    'camerproject:owner' => "Founded",
+    'camerproject:owner' => "Founder",
     'camerproject:members' => 'Project members',
     'camerproject:featured' => 'Featured project',
     'camerproject:searchtag' => "Search for project by tag",
@@ -68,7 +70,6 @@ return [
     
     'camerproject:makeunfeatured' => 'Unfeature',
     'camerproject:makefeatured' => 'Make featured',
-    'camerproject:owner' => "Owner",
     'camerproject:owner:warning' => "Warning: if you change this value, you will no longer be the owner of this project.",
     'camerproject:content_access_mode:warning' => "Warning: Changing this setting won't change the access permission of existing project content.",
     
@@ -209,6 +210,8 @@ return [
     'camerproject:needproject:expectedabili' => 'Expected abilities',
     'camerproject:needproject:statusneed' => 'Status need',
     'camerproject:needproject:add' => ' Create need for current project',
+   
+   
     
     /**
      *  project status 
@@ -272,4 +275,12 @@ return [
      * redifine name 
      */
     'groups' => "Projects",
+    'au_subgroups:add:subgroup' => 'Create need for current project',
+    'groups:edit' => 'Edit project',
+    'groups:activity' => 'Project activity',
+    'file:group' => 'Project files',
+    'pages:group' => 'Project documents',
+    'discussion:group' => 'Project discussion',
+    'bookmarks:group' => 'Project bookmarks',
+    
  ];

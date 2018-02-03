@@ -31,6 +31,7 @@ echo elgg_view_field([
 echo elgg_view_field([
      '#type' => 'plaintext',
      '#label' => elgg_echo('camerproject:description'),
+     '#help' => elgg_echo('camerproject:description:help'),
      'name' => 'description',
      'value' => elgg_extract('description', $vars),
      'required' => true,
@@ -48,7 +49,7 @@ echo elgg_view_field([
 
 echo elgg_view_field([
     '#type' => 'dropdown',
-    '#label' => elgg_echo("camerproject:sectorindustry"),
+    '#label' => elgg_echo("camerproject:industry"),
     'name' => 'industry',
     'options_values'=> $industry,
     'value' => elgg_extract('industry', $vars),

@@ -21,9 +21,7 @@ elgg_push_breadcrumb(elgg_echo('edit'));
 
 // build page elements
 $title = elgg_echo('camerproject:needproject:edit', [$entity->getDisplayName()]);
-
 $body_vars = camerproject_prepare_needproject_vars();
-
 $body = elgg_view_form('needproject/edit', $body_vars);
 
 // build page

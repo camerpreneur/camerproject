@@ -6,18 +6,14 @@
  * @package ElggGroup
  */
 require_once __DIR__ . '/lib/functions.php';
-
-//elgg_register_plugin_hook_handler('route:rewrite', 'groups', 'camerproject_rewrite_handler');
+require_once __DIR__ . '/lib/events.php';
 
 elgg_register_event_handler('init', 'system', 'camerproject_init');
 elgg_register_event_handler('init', 'system', 'camerproject_fields_setup', 10000);
 
 
 function camerproject_init(){
-	
-	elgg_unregister_plugin_hook_handler('page_owner', 'system', 'default_page_owner_handler');
-	elgg_register_plugin_hook_handler('page_owner', 'system', 'camer_default_page_owner_handler');
-    
+	  
    elgg_register_entity_type('group', Camerproject::SUBTYPE);
    elgg_register_entity_type('object', Needproject::SUBTYPE);   
    // plugin hook
@@ -42,6 +38,12 @@ function camerproject_init(){
    elgg_unregister_event_handler('pagesetup', 'system', 'groups_setup_sidebar_menus');
    elgg_register_event_handler('pagesetup', 'system', 'camerproject_setup_sidebar_menus');
    
+   // activity project
+   elgg_unextend_view('groups/tool_latest', 'groups/profile/activity_module');
+   elgg_extend_view('groups/tool_latest', 'groups/profile/activity_module');
+   
+   elgg_unregister_plugin_hook_handler('register', 'menu:owner_block', 'groups_activity_owner_block_menu');
+   elgg_register_plugin_hook_handler('register', 'menu:owner_block', 'camerproject_activity_owner_block_menu');
    
    // project members tabs
    elgg_unregister_plugin_hook_handler('register', 'menu:groups_members', 'groups_members_menu_setup');
@@ -53,9 +55,25 @@ function camerproject_init(){
    elgg_register_action('needproject/edit', "$actions_bases/save.php");
    elgg_register_action('needproject/delete', "$actions_bases/delete.php");
    
-    // register page handlers
-    elgg_register_page_handler('needproject', '\camerpreneur\camerproject\Router::needproject');
+   // register page handlers
+   elgg_register_page_handler('needproject', '\camerpreneur\camerproject\Router::needproject');
    
+   // au subgroups 
+//   remove_group_tool_option('subgroups', elgg_echo('au_subgroups:group:enable'));
+//   remove_group_tool_option('subgroups_members_create', elgg_echo('au_subgroups:group:memberspermissions'));
+//   elgg_unextend_view('forms/groups/edit', 'forms/au_subgroups/edit');  
+//   elgg_unextend_view('groups/tool_latest', 'au_subgroups/group_module');
+//   elgg_extend_view('groups/tool_latest', 'au_subgroups/group_module');
+//   
+//   elgg_unregister_event_handler('pagesetup', 'system', __NAMESPACE__ . '\\pagesetup');
+//   elgg_register_event_handler('pagesetup', 'system', __NAMESPACE__ . '\\camerprojectpagesetup');
+
+   //elgg_unregister_page_handler('au_subgroups', __NAMESPACE__ . '\\au_subgroups_pagehandler');
+   //elgg_register_page_handler('au_subgroups', __NAMESPACE__ . '\\camer_au_subgroups_pagehandler');
+   
+   //elgg_unregister_plugin_hook_handler('route', 'groups', __NAMESPACE__ . '\\groups_router', 400);
+   //elgg_register_plugin_hook_handler('route', 'groups', __NAMESPACE__ . '\\camer_groups_router', 400);
+   elgg_unextend_view('groups/edit', 'au_subgroups/group/transfer');
    
    // Help core resolve page owner guids from group routes
    // Registered with an earlier priority to be called before default_page_owner_handler()    
@@ -69,15 +87,399 @@ function camerproject_init(){
     elgg_unregister_event_handler('pagesetup', 'system', 'notifications_plugin_pagesetup');
     elgg_register_event_handler('pagesetup', 'system', 'notifications_camerproject_plugin_pagesetup');
     
-  // pages of project
+   
+    // pages of project
     elgg_unextend_view('groups/tool_latest', 'pages/group_module');
     elgg_extend_view('groups/tool_latest', 'pages/group_module');
     
     elgg_unregister_page_handler('pages', 'pages_page_handler');
     elgg_register_page_handler('pages', 'camerproject_pages_page_handler');
     elgg_unregister_plugin_hook_handler('register', 'menu:owner_block', 'pages_owner_block_menu');
-    elgg_register_plugin_hook_handler('register', 'menu:owner_block', 'camerproject_pages_owner_block_menu');      
-}   
+    elgg_register_plugin_hook_handler('register', 'menu:owner_block', 'camerproject_pages_owner_block_menu');
+    elgg_unregister_plugin_hook_handler('page_owner', 'system', 'default_page_owner_handler');
+    elgg_register_plugin_hook_handler('page_owner', 'system', 'camer_default_page_owner_handler');
+    
+  // files of project 
+    elgg_unextend_view('groups/tool_latest', 'file/group_module');
+    elgg_extend_view('groups/tool_latest', 'file/group_module');
+
+    elgg_unregister_page_handler('file', 'file_page_handler');
+    elgg_register_page_handler('file', 'camerproject_file_page_handler');
+    elgg_unregister_plugin_hook_handler('register', 'menu:owner_block', 'file_owner_block_menu');
+    elgg_register_plugin_hook_handler('register', 'menu:owner_block', 'camerproject_file_owner_block_menu');
+  
+  // discussions of project
+    elgg_unregister_page_handler('discussion', 'discussion_page_handler');
+    elgg_register_page_handler('discussion', 'camerproject_discussion_page_handler');
+    elgg_unregister_plugin_hook_handler('register', 'menu:owner_block', 'discussion_owner_block_menu');
+    elgg_register_plugin_hook_handler('register', 'menu:owner_block', 'camerproject_discussion_owner_block_menu');
+    
+  // bookmarks of project
+    elgg_unregister_page_handler('bookmarks', 'bookmarks_page_handler');
+    elgg_register_page_handler('bookmarks', 'camerproject_bookmarks_page_handler');
+    elgg_unregister_plugin_hook_handler('register', 'menu:owner_block', 'bookmarks_owner_block_menu');
+    elgg_register_plugin_hook_handler('register', 'menu:owner_block', 'camerproject_bookmarks_owner_block_menu');
+ 
+} 
+
+
+function camer_au_subgroups_pagehandler($page) {
+	
+	// dirty check to avoid duplicate page handlers
+	// since this should only be called from the route, groups hook
+	if (strpos(current_page_url(), elgg_get_site_url() . 'au_subgroups') === 0) {
+		return false;
+	}
+	
+	switch ($page[0]) {
+		case 'add':
+			set_input('au_subgroup', true);
+			set_input('au_subgroup_parent_guid', $page[1]);
+			elgg_set_page_owner_guid($page[1]);
+			echo elgg_view_resource('au_subgroups/add');
+			return true;
+			break;
+		
+		case 'list':
+			elgg_set_page_owner_guid($page[1]);
+			echo elgg_view('resources/au_subgroups/list');
+                       return true;
+			break;
+		
+		case 'delete':
+			elgg_set_page_owner_guid($page[1]);
+			echo elgg_view('resources/au_subgroups/delete');
+                       return true;
+			break;
+		
+		case 'openclosed':
+			set_input('filter', $page[1]);
+			echo elgg_view('resources/au_subgroups/openclosed');
+			return true;
+			break;
+	}
+	
+	return false;
+}
+
+
+/**
+ * Add owner block link
+ */
+function camerproject_activity_owner_block_menu($hook, $type, $return, $params) {
+	if (elgg_instanceof($params['entity'], 'group')) {
+		if ($params['entity']->activity_enable != "no") {
+			$url = "camerproject/activity/{$params['entity']->guid}";
+			$item = new ElggMenuItem('activity', elgg_echo('groups:activity'), $url);
+			$return[] = $item;
+		}
+	}
+
+	return $return;
+}
+ 
+/**
+ * Add a menu item to an ownerblock
+ * 
+ * @param string $hook
+ * @param string $type
+ * @param array  $return
+ * @param array  $params
+ */
+function camerproject_bookmarks_owner_block_menu($hook, $type, $return, $params) {
+	if (elgg_instanceof($params['entity'], 'user')) {
+		$url = "bookmarks/owner/{$params['entity']->username}";
+		$item = new ElggMenuItem('bookmarks', elgg_echo('bookmarks'), $url);
+		$return[] = $item;
+	} else {
+		if ($params['entity']->bookmarks_enable != 'no') {
+			$url = "bookmarks/project/{$params['entity']->guid}/all";
+			$item = new ElggMenuItem('bookmarks', elgg_echo('bookmarks:group'), $url);
+			$return[] = $item;
+		}
+	}
+
+	return $return;
+}
+
+
+/**
+ * Dispatcher for bookmarks.
+ *
+ * URLs take the form of
+ *  All bookmarks:        bookmarks/all
+ *  User's bookmarks:     bookmarks/owner/<username>
+ *  Friends' bookmarks:   bookmarks/friends/<username>
+ *  View bookmark:        bookmarks/view/<guid>/<title>
+ *  New bookmark:         bookmarks/add/<guid> (container: user, group, parent)
+ *  Edit bookmark:        bookmarks/edit/<guid>
+ *  Group bookmarks:      bookmarks/group/<guid>/all
+ *  Bookmarklet:          bookmarks/bookmarklet/<guid> (user)
+ *
+ * Title is ignored
+ *
+ * @param array $page
+ * @return bool
+ */
+function camerproject_bookmarks_page_handler($page) {
+
+	elgg_load_library('elgg:bookmarks');
+
+	if (!isset($page[0])) {
+		$page[0] = 'all';
+	}
+
+	elgg_push_breadcrumb(elgg_echo('bookmarks'), 'bookmarks/all');
+
+	switch ($page[0]) {
+		case "all":
+			echo elgg_view_resource('bookmarks/all');
+			break;
+
+		case "owner":
+			echo elgg_view_resource('bookmarks/owner');
+			break;
+
+		case "friends":
+			echo elgg_view_resource('bookmarks/friends');
+			break;
+
+		case "view":
+			echo elgg_view_resource('bookmarks/view', [
+				'guid' => $page[1],
+			]);
+			break;
+
+		case "add":
+			echo elgg_view_resource('bookmarks/add');
+			break;
+
+		case "edit":
+			echo elgg_view_resource('bookmarks/edit', [
+				'guid' => $page[1],
+			]);
+			break;
+
+		case 'project':
+			echo elgg_view_resource('bookmarks/owner');
+			break;
+
+		case "bookmarklet":
+			echo elgg_view_resource('bookmarks/bookmarklet', [
+				'container_guid' => $page[1],
+			]);
+			break;
+
+		default:
+			return false;
+	}
+
+	elgg_pop_context();
+	return true;
+}
+
+/**
+ * Add owner block link for groups
+ *
+ * @param string         $hook   'register'
+ * @param string         $type   'menu:owner_block'
+ * @param ElggMenuItem[] $return
+ * @param array          $params
+ * @return ElggMenuItem[] $return
+ */
+function camerproject_discussion_owner_block_menu($hook, $type, $return, $params) {
+	if (elgg_instanceof($params['entity'], 'group')) {
+		if ($params['entity']->forum_enable != "no") {
+			$url = "discussion/project/{$params['entity']->guid}";
+			$item = new ElggMenuItem('discussion', elgg_echo('discussion:group'), $url);
+			$return[] = $item;
+		}
+	}
+
+	return $return;
+}
+
+/**
+ * Discussion page handler
+ *
+ * URLs take the form of
+ *  All topics in site:    discussion/all
+ *  List topics in forum:  discussion/owner/<guid>
+ *  View discussion topic: discussion/view/<guid>
+ *  Add discussion topic:  discussion/add/<guid>
+ *  Edit discussion topic: discussion/edit/<guid>
+ *
+ * @param array $page Array of url segments for routing
+ * @return bool
+ */
+function camerproject_discussion_page_handler($page) {
+
+	if (!isset($page[0])) {
+		$page[0] = 'all';
+	}
+
+	elgg_push_breadcrumb(elgg_echo('discussion'), 'discussion/all');
+
+	switch ($page[0]) {
+		case 'all':
+			echo elgg_view_resource('discussion/all');
+			break;
+		case 'owner':
+			echo elgg_view_resource('discussion/owner', [
+				'guid' => elgg_extract(1, $page),
+			]);
+			break;
+		case 'project':
+			echo elgg_view_resource('discussion/group', [
+				'guid' => elgg_extract(1, $page),
+			]);
+			break;
+		case 'add':
+			echo elgg_view_resource('discussion/add', [
+				'guid' => elgg_extract(1, $page),
+			]);
+			break;
+		case 'reply':
+			switch (elgg_extract(1, $page)) {
+				case 'edit':
+					echo elgg_view_resource('discussion/reply/edit', [
+						'guid' => elgg_extract(2, $page),
+					]);
+					break;
+				case 'view':
+					discussion_redirect_to_reply(elgg_extract(2, $page), elgg_extract(3, $page));
+					break;
+				default:
+					return false;
+			}
+			break;
+		case 'edit':
+			echo elgg_view_resource('discussion/edit', [
+				'guid' => elgg_extract(1, $page),
+			]);
+			break;
+		case 'view':
+			echo elgg_view_resource('discussion/view', [
+				'guid' => elgg_extract(1, $page),
+			]);
+			break;
+		default:
+			return false;
+	}
+	return true;
+}
+
+
+/**
+ * Add a menu item to the user ownerblock
+ */
+function camerproject_file_owner_block_menu($hook, $type, $return, $params) {
+	if (elgg_instanceof($params['entity'], 'user')) {
+		$url = "file/owner/{$params['entity']->username}";
+		$item = new ElggMenuItem('file', elgg_echo('file'), $url);
+		$return[] = $item;
+	} else {
+		if ($params['entity']->file_enable != "no") {
+			$url = "file/project/{$params['entity']->guid}/all";
+			$item = new ElggMenuItem('file', elgg_echo('file:group'), $url);
+			$return[] = $item;
+		}
+	}
+
+	return $return;
+}
+
+
+/**
+ * Dispatches file pages.
+ * URLs take the form of
+ *  All files:       file/all
+ *  User's files:    file/owner/<username>
+ *  Friends' files:  file/friends/<username>
+ *  View file:       file/view/<guid>/<title>
+ *  New file:        file/add/<guid>
+ *  Edit file:       file/edit/<guid>
+ *  Group files:     file/group/<guid>/all
+ *  Download:        file/download/<guid>
+ *
+ * Title is ignored
+ *
+ * @param array $page
+ * @return bool
+ */
+function camerproject_file_page_handler($page) {
+
+	if (!isset($page[0])) {
+		$page[0] = 'all';
+	}
+
+	$page_type = $page[0];
+	switch ($page_type) {
+		case 'owner':
+			file_register_toggle();
+			echo elgg_view_resource('file/owner');
+			break;
+		case 'friends':
+			file_register_toggle();
+			echo elgg_view_resource('file/friends');
+			break;
+		case 'view':
+			echo elgg_view_resource('file/view', [
+				'guid' => $page[1],
+			]);
+			break;
+		case 'add':
+			echo elgg_view_resource('file/upload');
+			break;
+		case 'edit':
+			echo elgg_view_resource('file/edit', [
+				'guid' => $page[1],
+			]);
+			break;
+		case 'search':
+			file_register_toggle();
+			echo elgg_view_resource('file/search');
+			break;
+		case 'project':
+			file_register_toggle();
+			echo elgg_view_resource('file/owner');
+			break;
+		case 'all':
+			file_register_toggle();
+			$dir = __DIR__ . "/views/" . elgg_get_viewtype();
+			if (_elgg_view_may_be_altered('resources/file/world', "$dir/resources/file/world.php")) {
+				elgg_deprecated_notice('The view "resources/file/world" is deprecated. Use "resources/file/all".', 2.3);
+				echo elgg_view_resource('file/world', ['__shown_notice' => true]);
+			} else {
+				echo elgg_view_resource('file/all');
+			}
+			break;
+		case 'download':
+			elgg_deprecated_notice('/file/download page handler has been deprecated and will be removed. Use elgg_get_download_url() to build download URLs', '2.2');
+			$dir = __DIR__ . "/views/" . elgg_get_viewtype();
+			if (_elgg_view_may_be_altered('resources/file/download', "$dir/resources/file/download.php")) {
+				// For BC with 2.0 if a plugin is suspected of using this view we need to use it.
+				echo elgg_view_resource('file/download', [
+					'guid' => $page[1],
+				]);
+			} else {
+				$file = get_entity($page[1]);
+				if (!$file instanceof ElggFile) {
+					return false;
+				}
+				$download_url = elgg_get_download_url($file);
+				if (!$download_url) {
+					return false;
+				}
+				forward($download_url);
+			}
+			break;
+		default:
+			return false;
+	}
+	return true;
+}
+
 
 function camer_default_page_owner_handler($hook, $entity_type, $returnvalue, $params) {
 	if ($returnvalue) {

@@ -75,13 +75,17 @@ if (is_array($profile_fields) && count($profile_fields) > 0) {
 	}
         
     if($owner->guid == elgg_get_logged_in_user_guid()){          
-        echo "<div class=\"elgg-module clearfix elgg-module-group box elgg-module-info \" style =\" text-align: center\">";
+        echo "<div class=\"elgg-module\">";
+        //echo "<div class=\"elgg-head\">";
         echo elgg_view('output/url', array(
             'text' => elgg_echo('camerproject:needproject:add'),
             'href' => elgg_get_site_url() . "needproject/add",
+            'link_class' => 'elgg-button elgg-button-action'
             ));
-        
+       // echo "</div>";
         echo "</div>";
+        
+        
     }
  
   

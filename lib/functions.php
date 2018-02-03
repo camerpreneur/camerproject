@@ -181,3 +181,78 @@ function camerproject_prepare_needproject_vars(Needproject $entity = null) {
 	
 	return $result;
 }
+
+
+/**
+ * Determines if a need could potentially be moved
+ * To a parent group
+ * Makes sure permissions are in order, and that the subgroup isn't already a parent
+ * of the parent or anything weird like that
+ * 
+ * @param type $user ElggUser
+ * @param type $needproject_guid
+ * @param type $parentgroup_guid
+ */
+function can_move_needproject($subgroup, $parent, $user = NULL) {
+	if (!elgg_instanceof($user, 'user')) {
+		$user = elgg_get_logged_in_user_entity();
+	}
+
+	if (!$user) {
+		return false;
+	}
+
+	// make sure they're really groups
+	if (!elgg_instanceof($subgroup, 'object') || !elgg_instanceof($parent, 'group')) {
+		return false;
+	}
+
+	// make sure we can edit them
+	if (!$subgroup->canEdit($user->guid) || !$parent->canEdit($user->guid)) {
+		return false;
+	}
+
+	// make sure we can edit all the way up, and we're not trying to move a group into itself
+	if (!can_edit_recursive($subgroup) || $subgroup->guid == $parent->guid) {
+		return false;
+	}
+
+	// make sure we're not moving a group into it's existing parent
+	$current_parent = get_parent_group($subgroup);
+	if ($current_parent && $current_parent->guid == $parent->guid) {
+		return false;
+	}
+
+	// also make sure the potential parent isn't a subgroup of the subgroup
+	$children = get_all_children_guids($subgroup);
+	if (in_array($parent->guid, $children)) {
+		return false;
+	}
+
+	return true;
+}
+
+/**
+ * Determines if a group is a needproject of another group
+ * 
+ * @param type $group
+ * return ElggGroup | false
+ */
+function get_parent_group($group) {
+	if (!elgg_instanceof($group, 'group')) {
+		return false;
+	}
+
+	$parent = elgg_get_entities_from_relationship(array(
+		'types' => array('group'),
+		'limit' => 1,
+		'relationship' => Camerproject::AFFECTED_NEEDPROJECT,
+		'relationship_guid' => $group->guid,
+	));
+
+	if (is_array($parent) && isset($parent[0])) {
+		return $parent[0];
+	}
+
+	return false;
+}
