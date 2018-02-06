@@ -28,7 +28,7 @@ if ($vars['full_view']) {
 	$params = array(
 		'entity' => $camerproject,
 		'metadata' => $metadata,
-		'subtitle' => $camerproject->briefdescription,
+		'subtitle' => $camerproject->description,
 	);
 	$params = $params + $vars;
 	$list_body = elgg_view('group/elements/summary', $params);

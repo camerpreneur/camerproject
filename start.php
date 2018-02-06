@@ -65,8 +65,8 @@ function camerproject_init(){
 //   elgg_unextend_view('groups/tool_latest', 'au_subgroups/group_module');
 //   elgg_extend_view('groups/tool_latest', 'au_subgroups/group_module');
 //   
-//   elgg_unregister_event_handler('pagesetup', 'system', __NAMESPACE__ . '\\pagesetup');
-//   elgg_register_event_handler('pagesetup', 'system', __NAMESPACE__ . '\\camerprojectpagesetup');
+   elgg_unregister_event_handler('pagesetup', 'system', __NAMESPACE__ . '\\pagesetup');
+   elgg_register_event_handler('pagesetup', 'system', __NAMESPACE__ . '\\camerprojectpagesetup');
 
    //elgg_unregister_page_handler('au_subgroups', __NAMESPACE__ . '\\au_subgroups_pagehandler');
    //elgg_register_page_handler('au_subgroups', __NAMESPACE__ . '\\camer_au_subgroups_pagehandler');
