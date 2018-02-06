@@ -7,6 +7,7 @@
  */
 require_once __DIR__ . '/lib/functions.php';
 require_once __DIR__ . '/lib/events.php';
+require_once __DIR__ . '/lib/hooks.php';
 
 elgg_register_event_handler('init', 'system', 'camerproject_init');
 elgg_register_event_handler('init', 'system', 'camerproject_fields_setup', 10000);
@@ -59,20 +60,34 @@ function camerproject_init(){
    elgg_register_page_handler('needproject', '\camerpreneur\camerproject\Router::needproject');
    
    // au subgroups 
+
 //   remove_group_tool_option('subgroups', elgg_echo('au_subgroups:group:enable'));
 //   remove_group_tool_option('subgroups_members_create', elgg_echo('au_subgroups:group:memberspermissions'));
 //   elgg_unextend_view('forms/groups/edit', 'forms/au_subgroups/edit');  
 //   elgg_unextend_view('groups/tool_latest', 'au_subgroups/group_module');
 //   elgg_extend_view('groups/tool_latest', 'au_subgroups/group_module');
 //   
-   elgg_unregister_event_handler('pagesetup', 'system', __NAMESPACE__ . '\\pagesetup');
-   elgg_register_event_handler('pagesetup', 'system', __NAMESPACE__ . '\\camerprojectpagesetup');
+  
+  
 
    //elgg_unregister_page_handler('au_subgroups', __NAMESPACE__ . '\\au_subgroups_pagehandler');
    //elgg_register_page_handler('au_subgroups', __NAMESPACE__ . '\\camer_au_subgroups_pagehandler');
+
+   remove_group_tool_option('subgroups', elgg_echo('au_subgroups:group:enable'));
+   remove_group_tool_option('subgroups_members_create', elgg_echo('au_subgroups:group:memberspermissions'));
+   elgg_unextend_view('forms/groups/edit', 'forms/au_subgroups/edit');  
+   elgg_unextend_view('groups/tool_latest', 'au_subgroups/group_module');
+   elgg_extend_view('groups/tool_latest', 'au_subgroups/group_module');
+
    
-   //elgg_unregister_plugin_hook_handler('route', 'groups', __NAMESPACE__ . '\\groups_router', 400);
-   //elgg_register_plugin_hook_handler('route', 'groups', __NAMESPACE__ . '\\camer_groups_router', 400);
+   elgg_unregister_event_handler('pagesetup', 'system', 'pagesetup');
+   elgg_register_event_handler('pagesetup', 'system', 'camerprojectpagesetup');
+
+   elgg_unregister_page_handler('au_subgroups', 'au_subgroups_pagehandler');
+   elgg_register_page_handler('au_subgroups', 'camer_au_subgroups_pagehandler'); //ToDoIt
+   
+   elgg_unregister_plugin_hook_handler('route', 'groups', 'groups_router', 400);
+   elgg_register_plugin_hook_handler('route', 'groups', 'camer_groups_router', 400); //ToDoIt
    elgg_unextend_view('groups/edit', 'au_subgroups/group/transfer');
    
    // Help core resolve page owner guids from group routes
@@ -127,7 +142,7 @@ function camer_au_subgroups_pagehandler($page) {
 	
 	// dirty check to avoid duplicate page handlers
 	// since this should only be called from the route, groups hook
-	if (strpos(current_page_url(), elgg_get_site_url() . 'au_subgroups') === 0) {
+	if (strpos(current_page_url(), elgg_get_site_url() . 'needproject') === 0) {
 		return false;
 	}
 	
@@ -136,7 +151,7 @@ function camer_au_subgroups_pagehandler($page) {
 			set_input('au_subgroup', true);
 			set_input('au_subgroup_parent_guid', $page[1]);
 			elgg_set_page_owner_guid($page[1]);
-			echo elgg_view_resource('au_subgroups/add');
+			echo elgg_view_resource('needproject/add');
 			return true;
 			break;
 		

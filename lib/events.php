@@ -1,6 +1,5 @@
 <?php
 
-
 function camerprojectpagesetup() {
 	if (in_array(elgg_get_context(), array('au_subgroups', 'group_profile'))) {
 		$group = elgg_get_page_owner_entity();
