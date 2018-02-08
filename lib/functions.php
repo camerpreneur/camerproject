@@ -256,3 +256,48 @@ function get_parent_group($group) {
 
 	return false;
 }
+
+
+
+function breadcrumb_override($params) {
+	switch ($params['segments'][0]) {
+		case 'profile':
+			$group = get_entity($params['segments'][1]);
+			if (!$group) {
+				return;
+			}
+
+			$breadcrumbs[] = array('title' => elgg_echo('groups'), 'link' => elgg_get_site_url() . 'groups/all');
+			$parentcrumbs = parent_breadcrumbs($group, false);
+
+			foreach ($parentcrumbs as $parentcrumb) {
+				$breadcrumbs[] = $parentcrumb;
+			}
+
+			$breadcrumbs[] = array(
+				'title' => $group->name,
+				'link' => NULL
+			);
+
+			set_input('au_subgroups_breadcrumbs', $breadcrumbs);
+			break;
+
+		case 'edit':
+			$group = get_entity($params['segments'][1]);
+			if (!$group) {
+				return;
+			}
+
+			$breadcrumbs[] = array('title' => elgg_echo('groups'), 'link' => elgg_get_site_url() . 'camerproject/all');
+			$parentcrumbs = parent_breadcrumbs($group, false);
+
+			foreach ($parentcrumbs as $parentcrumb) {
+				$breadcrumbs[] = $parentcrumb;
+			}
+			$breadcrumbs[] = array('title' => $group->name, 'link' => $group->getURL());
+			$breadcrumbs[] = array('title' => elgg_echo('groups:edit'), 'link' => NULL);
+
+			set_input('au_subgroups_breadcrumbs', $breadcrumbs);
+			break;
+	}
+}

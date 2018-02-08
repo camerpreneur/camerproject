@@ -1,27 +1,33 @@
 <?php
-/*
- * add needproject
- */
 
-gatekeeper();
+namespace AU\SubGroups;
 
-// breadcrumb
-//elgg_push_breadcrumb(elgg_echo('camerproject:breadcrumb:needproject:all'), 'needproject/all');
-elgg_push_breadcrumb(elgg_echo('add'));
+$page_owner = elgg_get_page_owner_entity();
 
-// build page elements
-$title = elgg_echo('camerproject:needproject:add');
+$any_member = ($page_owner->subgroups_members_create_enable != 'no');
 
-$body_vars = camerproject_prepare_needproject_vars();
+if (!($any_member && $page_owner->isMember())) {
+  if (!$page_owner->canEdit()) {
+	register_error(elgg_echo('au_subgroups:noedit'));
+	forward($page_owner->getURL());
+  }
+}
 
-$body = elgg_view_form('needproject/edit', $body_vars);
+$title = elgg_echo('au_subgroups:add:subgroup');
 
-// build page
-$page = elgg_view_layout('content', [
-	'title' => $title,
-	'content' => $body,
-	'filter' => false,
-]);
+// set up breadcrumb navigation
+parent_breadcrumbs($page_owner);
+elgg_push_breadcrumb($page_owner->name, $page_owner->getURL());
+elgg_push_breadcrumb(elgg_echo('au_subgroups:add:subgroup'));
 
-// draw page
-echo elgg_view_page($title, $page);
+
+$content = elgg_view_form('needprojects/edit');
+
+
+$body = elgg_view_layout('content', array(
+    'title' => $title,
+    'content' => $content,
+    'filter' => false
+));
+
+echo elgg_view_page($title, $body);
