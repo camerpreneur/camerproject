@@ -1,7 +1,5 @@
 <?php
 
-namespace AU\SubGroups;
-
 $page_owner = elgg_get_page_owner_entity();
 $title = elgg_echo('au_subgroups:subgroups');
 elgg_set_context('au_subgroups');

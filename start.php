@@ -57,7 +57,7 @@ function camerproject_init(){
    elgg_register_action('needproject/delete', "$actions_bases/delete.php");
    
    // register page handlers
-   elgg_register_page_handler('needproject', '\camerpreneur\camerproject\Router::needproject');
+   //elgg_register_page_handler('needproject', '\camerpreneur\camerproject\Router::needproject'); //Done in camerproject_page_handler
    
    // au subgroups 
 
@@ -868,6 +868,31 @@ function camerproject_page_handler($page) {
 			echo elgg_view_resource("camerproject/{$page[0]}", [
 				'guid' => $page[1],
 			]);
+			break;
+		case 'needproject':
+			switch (elgg_extract(1, $page)) {
+				case 'all':
+					echo elgg_view_resource('needproject/all');
+					break;
+				case 'list':
+				case 'add':   //Add URL must be camerproject/needproject/add/{ParentGroup_GUID}
+					elgg_set_page_owner_guid($page[2]);
+					echo elgg_view_resource("needproject/{$page[1]}");
+					break;
+				case 'view':
+					echo elgg_view_resource('needproject/view', [
+						'guid' => elgg_extract(2, $page),
+					]);
+					break;
+				case 'edit':   //Edit URL must be camerproject/needproject/edit/{GUID}/{ParentGroup_GUID}
+					elgg_set_page_owner_guid($page[3]);
+					echo elgg_view_resource('needproject/edit', [
+						'guid' => elgg_extract(2, $page),
+					]);
+					break;
+				default:
+					return false;
+			}
 			break;
 		default:
 			return false;
