@@ -5,29 +5,29 @@
  * @uses $vars['entity'] the needproject edit
  */
 
-use Needproject;
-
-/* @var $entity Needproject */
-
-$entity = elgg_extract('entity', $vars);
+$guid = elgg_extract('guid', $vars, null);
+$entity = get_entity($guid);
 $skills = needproject_get_skills();
 $ability = needproject_get_ability();
 
-if( $entity instanceof Needproject){    
-    // edit    
 echo elgg_view_field([
-        '#type' => 'hidden',
-        'name' => 'guid',
-        'value' => $entity->guid,
-    ]);
-}
+    '#type' => 'hidden',
+    'name' => 'guid',
+    'value' => $guid,
+]);
 
+echo elgg_view_field([
+    '#type' => 'hidden',
+    'name' => 'parent_guid',
+    'value' => elgg_get_page_owner_guid(),
+]);
+	
 // title
 echo elgg_view_field([
 	'#type' => 'text',
 	'#label' => elgg_echo('camerproject:needproject:title'),
-	'name' => 'titleneed',
-	'value' => elgg_extract('titleneed', $vars),
+	'name' => 'title',
+	'value' => elgg_extract('title', $vars, ''),
 	'required' => true,
 ]);
 
@@ -37,7 +37,7 @@ echo elgg_view_field([
     '#type' => 'plaintext',
     '#label' => elgg_echo("camerproject:needproject:description"),
     'name' => 'description',
-    'value' => elgg_extract('description', $vars),
+    'value' => elgg_extract('description', $vars, ''),
     'required' => true,
 ]);
 
@@ -48,7 +48,7 @@ echo elgg_view_field([
     '#label' => elgg_echo("camerproject:needproject:skills"),
     'name' => 'skills',
     'options_values' => $skills,
-    'value' => elgg_extract('skills', $vars),
+    'value' => elgg_extract('skills', $vars, ''),
     'required' => true,
 ]);
 
@@ -64,7 +64,7 @@ echo elgg_view_field([
         'tenandfiften' => elgg_echo("camerproject:needprojectyear:tenandfifteenyears"),
         'abovefifteen' => elgg_echo("camerproject:needprojectyear:abovefifteenyears"),
     ],
-    'value' => elgg_extract('yearexper', $vars),
+    'value' => elgg_extract('yearexper', $vars, ''),
     'required' => true,
 ]);
 
@@ -74,7 +74,7 @@ echo elgg_view_field([
     '#label' => elgg_echo("camerproject:needproject:expectedabili"),
     'name' => 'ability',
     'options_values' => $ability,
-    'value' => elgg_extract('ability', $vars),
+    'value' => elgg_extract('ability', $vars, ''),
     'required' => true,
 ]);
 
@@ -88,7 +88,7 @@ echo elgg_view_field([
         'needfree' => elgg_echo("camerproject:needprojectstatus:free"),
         'needpaying' => elgg_echo("camerproject:needprojectstatus:paying"),
     ],
-    'value' => elgg_extract('statusneed', $vars),
+    'value' => elgg_extract('statusneed', $vars, ''),
 ]);
 
 // access
@@ -96,10 +96,10 @@ echo elgg_view_field([
 	'#type' => 'access',
 	'#label' => elgg_echo('access'),
 	'name' => 'access_id',
-	'value' => (int) elgg_extract('access_id', $vars),
+	'value' => elgg_extract('access_id', $vars, ACCESS_DEFAULT),
 	'entity_type' => 'object',
 	'entity_subtype' => Needproject::SUBTYPE,
-	'container_guid' => elgg_get_site_entity()->guid,
+	'container_guid' => elgg_get_page_owner_guid(),
 	'entity' => $entity,
 ]);
 

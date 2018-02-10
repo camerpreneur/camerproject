@@ -156,12 +156,11 @@ function camerproject_prepare_needproject_vars(Needproject $entity = null) {
 	
 	// defaults
 	$result = [
-		'titleneed' => '',
+		'title' => '',
 		'description' => '',
-                'skills' => '',
-                'ability' => '',
-                'statusneed' => '',
-            
+        'skills' => '',
+        'ability' => '',
+        'statusneed' => '',
 		'access_id' => get_default_access(null, [
 			'entity_type' => 'object',
 			'entity_subtype' => Needproject::SUBTYPE,

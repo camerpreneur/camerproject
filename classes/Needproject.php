@@ -15,10 +15,10 @@ class Needproject extends ElggObject {
 */   
    protected function initializeAttributes() {
         parent::initializeAttributes();
-        $site = elgg_get_site_entity();
+        //$site = elgg_get_site_entity();
         $this->attributes['subtype'] = self::SUBTYPE;
-        $this->attributes['owner_guid'] = $site->guid;
-        $this->attributes['container_guid'] = $site->guid;
+        //$this->attributes['owner_guid'] = $site->guid;
+       // $this->attributes['container_guid'] = $site->guid;
     }
     
 /**
@@ -36,7 +36,7 @@ public function canComment($user_guid = 0, $default = null) {
 public function getURL() {
         $friendly_title = elgg_get_friendly_title($this->getDisplayName());
         
-        return elgg_normalize_url("needproject/view/{$this->guid}/{$friendly_title}");
+        return elgg_normalize_url("camerproject/needproject/view/{$this->guid}/{$friendly_title}"); //Check it in all code
 }
 
 }
